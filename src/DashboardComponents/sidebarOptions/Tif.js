@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './Tif.css';
@@ -9,33 +9,56 @@ import parseGeoraster from 'georaster';
 const position = [21.1458, 79.0882]; // Centered on India
 const zoom = 5;
 
-const GeoTiffLayer = ({ file }) => {
+const GeoTiffLayer = ({ file, resetMapView }) => {
   const map = useMap();
+  const layerRef = useRef(null);
 
   useEffect(() => {
+    // Clean up previous layer if it exists
+    if (layerRef.current) {
+      map.removeLayer(layerRef.current);
+      layerRef.current = null;
+    }
+
     if (file) {
       const reader = new FileReader();
       reader.onload = async function () {
         const arrayBuffer = reader.result;
-        const georaster = await parseGeoraster(arrayBuffer);
+        try {
+          const georaster = await parseGeoraster(arrayBuffer);
 
-        const layer = new GeoRasterLayer({
-          georaster,
-          opacity: 0.7,
-          resolution: 256, // or adjust for quality/performance
-        });
+          const newLayer = new GeoRasterLayer({
+            georaster,
+            opacity: 0.7,
+            resolution: 256, // or adjust for quality/performance
+          });
 
-        layer.addTo(map);
-        map.fitBounds(layer.getBounds());
+          newLayer.addTo(map);
+          map.fitBounds(newLayer.getBounds());
+          layerRef.current = newLayer;
+        } catch (error) {
+          console.error("Error parsing GeoTIFF:", error);
+        }
       };
       reader.readAsArrayBuffer(file);
+    } else if (resetMapView) {
+      // Reset to default view when file is removed
+      map.setView(position, zoom);
     }
-  }, [file, map]);
+
+    // Clean up when component unmounts or when file changes
+    return () => {
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current);
+        layerRef.current = null;
+      }
+    };
+  }, [file, map, resetMapView]);
 
   return null;
 };
 
-const FileUploadArea = ({ onFileChange, selectedFile }) => {
+const FileUploadArea = ({ onFileChange, selectedFile, onFileRemove }) => {
   const [isDragging, setIsDragging] = useState(false);
   
   const handleDragOver = (e) => {
@@ -70,30 +93,39 @@ const FileUploadArea = ({ onFileChange, selectedFile }) => {
         the detailed information of the location.
       </p>
       
-      <div 
-        className={`upload-area ${isDragging ? 'dragging' : ''}`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <input
-          id="file-upload"
-          type="file"
-          accept=".tif,.tiff"
-          onChange={onFileChange}
-          className="file-input"
-        />
-        <label htmlFor="file-upload" className="upload-label">
-          Click here or drag file to upload
-        </label>
-      </div>
-      
-      {selectedFile && (
-        <div className="selected-file">
-          <div className="file-icon">
-            <span className="file-type">TIF</span>
+      {!selectedFile ? (
+        <div 
+          className={`upload-area ${isDragging ? 'dragging' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <input
+            id="file-upload"
+            type="file"
+            accept=".tif,.tiff"
+            onChange={onFileChange}
+            className="file-input"
+          />
+          <label htmlFor="file-upload" className="upload-label">
+            Click here or drag file to upload
+          </label>
+        </div>
+      ) : (
+        <div className="selected-file-container">
+          <div className="selected-file">
+            <div className="file-icon">
+              <span className="file-type">TIF</span>
+            </div>
+            <span className="file-name">{selectedFile.name}</span>
           </div>
-          <span className="file-name">{selectedFile.name}</span>
+          <button 
+            className="remove-file-btn" 
+            onClick={onFileRemove}
+            aria-label="Remove file"
+          >
+            Remove
+          </button>
         </div>
       )}
       
@@ -106,9 +138,16 @@ const FileUploadArea = ({ onFileChange, selectedFile }) => {
 
 const MapUI = () => {
   const [orthophotoFile, setOrthophotoFile] = useState(null);
+  const [resetMapView, setResetMapView] = useState(false);
 
   const handleFileChange = (event) => {
     setOrthophotoFile(event.target.files[0]);
+    setResetMapView(false);
+  };
+
+  const handleFileRemove = () => {
+    setOrthophotoFile(null);
+    setResetMapView(true);
   };
 
   return (
@@ -116,26 +155,30 @@ const MapUI = () => {
       <div className="sidebar">
         <FileUploadArea 
           onFileChange={handleFileChange} 
-          selectedFile={orthophotoFile} 
+          selectedFile={orthophotoFile}
+          onFileRemove={handleFileRemove}
         />
       </div>
 
       <div className="map-container">
-        <MapContainer center={position} zoom={zoom} style={{ height: '100%', width: '100%', marginTop: '9vh' }}>
+        <MapContainer center={position} zoom={zoom} style={{ height: '90vh', width: '100%' }}>
           {/* Satellite imagery layer */}
           <TileLayer
             url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            attribution='Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            
             maxZoom={18}
           />
           {/* Labels layer for hybrid effect */}
           <TileLayer
             url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-            attribution='© <a href="https://www.esri.com/">Esri</a> | Labels'
+            
             maxZoom={18}
             opacity={0.8} // Slightly transparent to let satellite imagery show through
           />
-          {orthophotoFile && <GeoTiffLayer file={orthophotoFile} />}
+          <GeoTiffLayer 
+            file={orthophotoFile} 
+            resetMapView={resetMapView} 
+          />
         </MapContainer>
       </div>
     </div>

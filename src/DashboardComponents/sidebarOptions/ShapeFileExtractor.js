@@ -425,7 +425,7 @@ const MyMap = () => {
     <>
       {map ? <DisplayPosition map={map} position={position} setPosition={setPosition} /> : null}
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', padding: '20px', marginTop: '13vh' }} className="upload-shapefile">
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', padding: '20px' }} className="upload-shapefile">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
           <label style={{ marginRight: '20px', fontSize: '16px' }}>Upload ShapeFile(.zip):</label>
           <input 
@@ -466,7 +466,7 @@ const MyMap = () => {
         center={center}
         zoom={zoom}
         scrollWheelZoom={true}
-        style={{ width: '100vw', height: "91vh" }}
+        style={{ width: '100%', height: "80vh" }}
         whenCreated={setMap}
         placeholder={<MapPlaceholder />}
       >
@@ -476,11 +476,11 @@ const MyMap = () => {
           <LayersControl.BaseLayer checked name="Hybrid Map (Satellite with Labels)">
             <TileLayer 
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" 
-              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+              
             />
             <TileLayer 
               url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}" 
-              attribution="Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom"
+              
             />
           </LayersControl.BaseLayer>
 

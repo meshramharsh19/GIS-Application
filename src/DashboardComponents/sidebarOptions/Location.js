@@ -39,7 +39,7 @@ const MapPage = () => {
   };
 
   return (
-    <div style={{ marginTop:'11vh', padding: '20px' }} className="map-container">
+    <div style={{  padding: '20px' }} className="map-container">
       <div className="input-container">
         <input
           type="text"
@@ -56,7 +56,7 @@ const MapPage = () => {
         <button onClick={handleGoClick}>Go</button>
       </div>
       <div className="map-wrapper">
-        <MapContainer center={position} zoom={zoom} style={{ height: '100%', width: '100%' }}>
+        <MapContainer center={position} zoom={zoom} style={{ height: '82vh', width: '100%' }}>
           <LayersControl position="topright">
             {/* Satellite imagery without labels */}
             <LayersControl.BaseLayer name="Satellite">

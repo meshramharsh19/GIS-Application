@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import './LoginPage.css';
+import { useNavigate, Link } from 'react-router-dom';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -38,7 +38,7 @@ const LoginPage = () => {
         localStorage.setItem('userRoutes', data.token);
         navigate('/DashboardApp');
       } else {
-        setErrorMessage(data.message || 'Invalid username/email or password.');
+        setErrorMessage(data.message || 'Invalid email or password.');
       }
     } catch (error) {
       setErrorMessage('Error connecting to the server. Please try again.');
@@ -49,57 +49,78 @@ const LoginPage = () => {
 
   return (
     <div className="login-container">
+      <div className="content-section">
+        <h1 className="main-title">The best Visualization</h1>
+        <h2 className="sub-title">for your spatial data</h2>
+        <p className="description">
+        This project is a full-stack web-based Geographic Information System (GIS) platform developed using the MERN stack (MongoDB, Express.js, React, Node.js). It offers interactive 2D and 3D data visualization capabilities, user authentication, and robust data management.
+        </p>
+      </div>
+      
       <div className="login-form">
         <h2>Login</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Username or email</label>
             <input
-              type="text"
-              id="Username"
+              type="email"
+              id="email"
               name="email"
-              placeholder="Enter your username or email"
+              placeholder="Email address"
               value={formData.email}
               onChange={handleChange}
               required
-              aria-describedby="usernameHelp"
             />
-            <small id="usernameHelp" className="form-text">
-              Your registered username or email.
-            </small>
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
             <input
               type="password"
               id="password"
               name="password"
-              placeholder="Enter your password"
+              placeholder="Password"
               value={formData.password}
               onChange={handleChange}
               required
-              aria-describedby="passwordHelp"
             />
-            <small id="passwordHelp" className="form-text">
-              Password must be at least 6 characters.
-            </small>
           </div>
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-          <div className="form-footer">
-            <button type="submit" className="login-btn" disabled={isSubmitting}>
-              {isSubmitting ? 'Logging in...' : 'Login'}
+          <div className="form-group checkbox-group">
+            <input
+              type="checkbox"
+              id="remember"
+              name="remember"
+            />
+            <label htmlFor="remember">Remember me</label>
+          </div>
+
+          <button type="submit" className="login-btn" disabled={isSubmitting}>
+            {isSubmitting ? 'Logging in...' : 'SIGN IN'}
+          </button>
+
+          <div className="divider">
+            <span>or sign in with:</span>
+          </div>
+
+          <div className="social-login">
+            <button type="button" className="social-btn facebook">
+              <i className="fa fa-facebook"></i>
             </button>
-            <div className="links">
-              <Link to="/forgot-password" className="forgot-password">
-                Forgot Password?
-              </Link>
-              <Link to="/signup" className="create-new">
-                Create New Account
-              </Link>
-            </div>
+            <button type="button" className="social-btn google">
+              <i className="fa fa-google"></i>
+            </button>
+            <button type="button" className="social-btn twitter">
+              <i className="fa fa-twitter"></i>
+            </button>
+            <button type="button" className="social-btn github">
+              <i className="fa fa-github"></i>
+            </button>
+          </div>
+          
+          <div className="links">
+            <Link to="/forgot-password">Forgot Password?</Link>
+            <Link to="/signup">Create New Account</Link>
           </div>
         </form>
       </div>

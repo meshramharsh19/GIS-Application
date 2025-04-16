@@ -9,7 +9,6 @@ const KML = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const fileInputRef = useRef(null);
   const drawnItemsRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
 
   // Get file upload functionality from FileUploader
   const { handleFileChange } = FileUploader({
@@ -21,25 +20,6 @@ const KML = () => {
 
   const triggerFileInput = () => {
     fileInputRef.current.click();
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handleFileChange({ target: { files } });
-    }
   };
 
   const handleDownloadKML = () => {
@@ -78,29 +58,11 @@ const KML = () => {
 
   return (
     <ErrorBoundary>
-      <div style={{ marginTop: '13vh', padding: '20px' }}>
+      <div style={{ padding: '20px' }}>
         <h1>KML File Uploader and Map Viewer</h1>
 
         {/* Styled file upload area */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '20px',
-            border: isDragging ? '2px dashed #2196f3' : '2px dashed #ccc',
-            padding: '20px',
-            borderRadius: '4px',
-            width: '300px',
-            height: '60px',
-            cursor: 'pointer',
-            position: 'relative'
-          }}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={triggerFileInput}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
           <input
             ref={fileInputRef}
             id="file-upload"
@@ -109,32 +71,29 @@ const KML = () => {
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
-          <span style={{ color: isDragging ? '#2196f3' : '#2196f3', fontWeight: 'bold' }}>
-            {isDragging ? "Drop the file here" : "Click here or drag file to upload"}
-          </span>
+          <div
+            onClick={triggerFileInput}
+            style={{
+              border: '2px dashed #2196f3',
+              padding: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              borderRadius: '4px',
+              width: '300px',
+              height: '45px',
+              color: '#2196f3',
+              fontWeight: 'bold'
+            }}
+          >
+            <span>Click here or drag file to upload</span>
+          </div>
         </div>
 
-        {/* Download button */}
-        {drawnItemsRef.current && (
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <button
-              onClick={handleDownloadKML}
-              style={{
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                padding: '10px 20px',
-                borderRadius: '5px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              Download KML
-            </button>
-          </div>
-        )}
+      
 
-        <div style={{ marginTop: '20px', height: '500px' }}>
+        <div style={{ height: '72vh' }}>
           <MapComponent
             kmlData={kmlData}
             imageUrl={imageUrl}

@@ -1,107 +1,384 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
-  useTheme,
-  useMediaQuery,
+  IconButton,
   Button,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  useMediaQuery,
+  Avatar,
+  Menu,
+  MenuItem,
+  Badge
 } from "@mui/material";
 import {
+  Menu as MenuIcon,
+  Map,
+  Layers,
+  Public,
+  FindInPage,
+  Download,
   Settings,
   Help,
-  Book,
+  Person,
   Logout,
-  AccountCircle,
+  Notifications,
+  Brightness4,
+  Brightness7
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import "./Header.css";
 
 const Header = ({ toggleDarkMode, darkMode }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
-
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-
-  useEffect(() => {
-    setIsLoaded(true);
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY) {
-        setShowHeader(false); // Scroll down -> hide header
-      } else {
-        setShowHeader(true); // Scroll up -> show header
-      }
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
-
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/users/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      setIsAuthenticated(false);
-      window.location.reload();
-    } catch (error) {
-      console.error("Error during logout:", error);
-      setIsAuthenticated(false);
-      window.location.reload();
-    }
+  const isMobile = useMediaQuery('(max-width:900px)');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
   };
-
-  const handleUserProfile = () => {
-    navigate("/user-profile");
+  
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
   };
-
-  const menuItems = [
-    { text: "Profile", icon: <AccountCircle />, onClick: handleUserProfile, sx: { color: "black" } },
-    { text: "Settings", icon: <Settings />, onClick: () => {}, sx: { color: "black" } },
-    { text: "Guide", icon: <Book />, onClick: () => {}, sx: { color: "black" } },
-    { text: "Help Center", icon: <Help />, onClick: () => {}, sx: { color: "black" } },
-    { text: "Logout", icon: <Logout />, onClick: handleLogout, sx: { color: "red" } },
-  ];
-
+  
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  
+  const handleLogout = () => {
+    // Logout logic
+    handleClose();
+  };
+  
   return (
-    <Box
-      className={`cardHeader ${darkMode ? "darkMode" : ""} ${
-        isLoaded ? "loaded" : ""
-      } ${showHeader ? "show" : "hide"}`}
-    >
-      <Box className="headerContent">
-        <Typography
-          variant="h5"
-          component="div"
-          className="headerTitle"
-          sx={{ fontWeight: 600 }}
-        >
-          Dashboard
-        </Typography>
-
-        <Box className="menuButtons">
-          {menuItems.map((item, index) => (
-            <Button
-              key={index}
-              startIcon={item.icon}
-              onClick={item.onClick}
-              className={`headerButton ${item.text === "Logout" ? "logout" : ""}`}
-              sx={item.sx}
-              aria-label={item.text} // Added for accessibility
+    <>
+      {/* Main Header */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          py: 1.5,
+          px: 3,
+          backgroundColor: darkMode ? "#1a1a2e" : "#ffffff",
+          color: darkMode ? "#e0e0e0" : "#333333",
+          borderBottom: `1px solid ${darkMode ? "#333344" : "#e0e0e0"}`,
+          position: "sticky",
+          top: 0,
+          zIndex: 1100,
+          height: "64px",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.08)"
+        }}
+      >
+        {/* Left side - Logo and title */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={toggleDrawer}
+              sx={{ mr: 2 }}
             >
-              {item.text}
+              <MenuIcon />
+            </IconButton>
+          )}
+          
+          <Box sx={{ display: "flex", alignItems: "center", ml: 6 }}>
+  <Box 
+    sx={{ 
+      bgcolor: darkMode ? "#3a5199" : "#4b6bdd", 
+      width: 36, 
+      height: 36, 
+      borderRadius: "8px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      mr: 1.5
+    }}
+  >
+    <Public sx={{ color: "#ffffff", fontSize: 22 }} />
+  </Box>
+  <Typography 
+    variant="h6" 
+    component="div" 
+    sx={{ 
+      fontWeight: 700, 
+      letterSpacing: "0.5px",
+      color: darkMode ? "#ffffff" : "#333333"
+    }}
+  >
+    GeoViz
+    <Typography 
+      component="span" 
+      sx={{ 
+        ml: 0.5, 
+        color: darkMode ? "#64b5f6" : "#5c78ff", 
+        fontWeight: 500 
+      }}
+    >
+      Pro
+    </Typography>
+  </Typography>
+</Box>
+
+        </Box>
+        
+        {/* Center - Navigation */}
+        {!isMobile && (
+          <Box sx={{ display: "flex", gap: "8px", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
+            <Button 
+              variant={darkMode ? "text" : "contained"} 
+              disableElevation
+              sx={{ 
+                backgroundColor: darkMode ? "transparent" : "#f0f4ff",
+                color: darkMode ? "#ffffff" : "#333333",
+                borderRadius: "8px",
+                fontSize: "0.875rem",
+                textTransform: "none",
+                fontWeight: 500,
+                px: 2,
+                "&:hover": {
+                  backgroundColor: darkMode ? "rgba(255,255,255,0.1)" : "#e6ebff"
+                },
+                border: darkMode ? "1px solid rgba(255,255,255,0.12)" : "none"
+              }}
+            >
+              Dashboard
             </Button>
-          ))}
+            
+            <Button 
+              variant="text" 
+              sx={{ 
+                color: darkMode ? "rgba(255,255,255,0.7)" : "#666666",
+                borderRadius: "8px",
+                fontSize: "0.875rem",
+                textTransform: "none",
+                fontWeight: 500,
+                px: 2
+              }}
+            >
+              Projects
+            </Button>
+            
+            <Button 
+              variant="text" 
+              sx={{ 
+                color: darkMode ? "rgba(255,255,255,0.7)" : "#666666",
+                borderRadius: "8px",
+                fontSize: "0.875rem",
+                textTransform: "none",
+                fontWeight: 500,
+                px: 2
+              }}
+            >
+              Analysis
+            </Button>
+            
+            <Button 
+              variant="text" 
+              sx={{ 
+                color: darkMode ? "rgba(255,255,255,0.7)" : "#666666",
+                borderRadius: "8px",
+                fontSize: "0.875rem",
+                textTransform: "none",
+                fontWeight: 500,
+                px: 2
+              }}
+            >
+              Data Library
+            </Button>
+          </Box>
+        )}
+        
+        {/* Right - Actions */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <IconButton 
+            color="inherit"
+            sx={{ 
+              mr: { xs: 1, md: 1.5 },
+              color: darkMode ? "rgba(255,255,255,0.7)" : "#666666",
+            }}
+            onClick={toggleDarkMode}
+          >
+            {darkMode ? <Brightness7 /> : <Brightness4 />}
+          </IconButton>
+          
+          <IconButton 
+            color="inherit"
+            sx={{ 
+              mr: { xs: 1, md: 1.5 },
+              color: darkMode ? "rgba(255,255,255,0.7)" : "#666666",
+            }}
+          >
+            <Badge badgeContent={3} color="error">
+              <Notifications />
+            </Badge>
+          </IconButton>
+          
+          <Avatar 
+            onClick={handleMenu}
+            sx={{ 
+              width: 36, 
+              height: 36, 
+              cursor: "pointer",
+              bgcolor: darkMode ? "#64b5f6" : "#4b6bdd",
+            }}
+          >
+            <Person />
+          </Avatar>
+          
+          <Menu
+            id="menu-appbar"
+            anchorEl={anchorEl}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+            sx={{
+              "& .MuiPaper-root": {
+                borderRadius: 2,
+                minWidth: 180,
+                boxShadow: "0px 8px 20px rgba(0,0,0,0.15)",
+                mt: 1.5
+              }
+            }}
+          >
+            <MenuItem onClick={handleClose}>Profile</MenuItem>
+            <MenuItem onClick={handleClose}>Account Settings</MenuItem>
+            <Divider />
+            <MenuItem onClick={handleClose}>Help & Support</MenuItem>
+            <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>
+              <ListItemIcon sx={{ color: "error.main" }}>
+                <Logout fontSize="small" />
+              </ListItemIcon>
+              Logout
+            </MenuItem>
+          </Menu>
         </Box>
       </Box>
-    </Box>
+      
+      {/* Sidebar Drawer for Mobile */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={toggleDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: 260,
+            backgroundColor: darkMode ? "#1a1a2e" : "#ffffff",
+            color: darkMode ? "#e0e0e0" : "#333333",
+            borderRight: `1px solid ${darkMode ? "#333344" : "#e0e0e0"}`,
+          },
+        }}
+      >
+        <Box sx={{ p: 2, display: "flex", alignItems: "center" }}>
+          <Box 
+            sx={{ 
+              bgcolor: darkMode ? "#3a5199" : "#4b6bdd", 
+              width: 36, 
+              height: 36, 
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mr: 1.5
+            }}
+          >
+            <Public sx={{ color: "#ffffff", fontSize: 22 }} />
+          </Box>
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
+              fontWeight: 700, 
+              letterSpacing: "0.5px",
+              color: darkMode ? "#ffffff" : "#333333"
+            }}
+          >
+            GeoViz
+            <Typography 
+              component="span" 
+              sx={{ 
+                ml: 0.5, 
+                color: darkMode ? "#64b5f6" : "#5c78ff", 
+                fontWeight: 500 
+              }}
+            >
+              Pro
+            </Typography>
+          </Typography>
+        </Box>
+        
+        <Divider sx={{ backgroundColor: darkMode ? "#333344" : "#e0e0e0" }} />
+        
+        <List>
+          <ListItem button selected>
+            <ListItemIcon sx={{ color: darkMode ? "#64b5f6" : "#5c78ff" }}>
+              <Map />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" />
+          </ListItem>
+          
+          <ListItem button>
+            <ListItemIcon sx={{ color: darkMode ? "rgba(255,255,255,0.7)" : "#666666" }}>
+              <Layers />
+            </ListItemIcon>
+            <ListItemText primary="Projects" />
+          </ListItem>
+          
+          <ListItem button>
+            <ListItemIcon sx={{ color: darkMode ? "rgba(255,255,255,0.7)" : "#666666" }}>
+              <FindInPage />
+            </ListItemIcon>
+            <ListItemText primary="Analysis" />
+          </ListItem>
+          
+          <ListItem button>
+            <ListItemIcon sx={{ color: darkMode ? "rgba(255,255,255,0.7)" : "#666666" }}>
+              <Public />
+            </ListItemIcon>
+            <ListItemText primary="Data Library" />
+          </ListItem>
+        </List>
+        
+        <Divider sx={{ backgroundColor: darkMode ? "#333344" : "#e0e0e0" }} />
+        
+        <List>
+          <ListItem button>
+            <ListItemIcon sx={{ color: darkMode ? "rgba(255,255,255,0.7)" : "#666666" }}>
+              <Download />
+            </ListItemIcon>
+            <ListItemText primary="Export Data" />
+          </ListItem>
+          
+          <ListItem button>
+            <ListItemIcon sx={{ color: darkMode ? "rgba(255,255,255,0.7)" : "#666666" }}>
+              <Settings />
+            </ListItemIcon>
+            <ListItemText primary="Settings" />
+          </ListItem>
+          
+          <ListItem button>
+            <ListItemIcon sx={{ color: darkMode ? "rgba(255,255,255,0.7)" : "#666666" }}>
+              <Help />
+            </ListItemIcon>
+            <ListItemText primary="Help & Support" />
+          </ListItem>
+        </List>
+      </Drawer>
+    </>
   );
 };
 
