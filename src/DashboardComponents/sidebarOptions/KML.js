@@ -9,6 +9,7 @@ const KML = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const fileInputRef = useRef(null);
   const drawnItemsRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Get file upload functionality from FileUploader
   const { handleFileChange } = FileUploader({
@@ -20,6 +21,25 @@ const KML = () => {
 
   const triggerFileInput = () => {
     fileInputRef.current.click();
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileChange({ target: { files } });
+    }
   };
 
   const handleDownloadKML = () => {
@@ -62,7 +82,25 @@ const KML = () => {
         <h1>KML File Uploader and Map Viewer</h1>
 
         {/* Styled file upload area */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '20px',
+            border: isDragging ? '2px dashed #2196f3' : '2px dashed #ccc',
+            padding: '20px',
+            borderRadius: '4px',
+            width: '300px',
+            height: '60px',
+            cursor: 'pointer',
+            position: 'relative'
+          }}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={triggerFileInput}
+        >
           <input
             ref={fileInputRef}
             id="file-upload"
@@ -71,24 +109,9 @@ const KML = () => {
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
-          <div
-            onClick={triggerFileInput}
-            style={{
-              border: '2px dashed #2196f3',
-              padding: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              borderRadius: '4px',
-              width: '300px',
-              height: '45px',
-              color: '#2196f3',
-              fontWeight: 'bold'
-            }}
-          >
-            <span>Click here or drag file to upload</span>
-          </div>
+          <span style={{ color: isDragging ? '#2196f3' : '#2196f3', fontWeight: 'bold' }}>
+            {isDragging ? "Drop the file here" : "Click here or drag file to upload"}
+          </span>
         </div>
 
         {/* Download button */}
